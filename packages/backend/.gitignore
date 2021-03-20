@@ -2,4 +2,19 @@
 /db-data
 /ipfs-data
 **/*.pyc
-pricing_models/data/*
+**/data/
+
+# OSX file
+.DS_Store
+
+# Editor config / IDE config
+.idea/
+.vscode/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so

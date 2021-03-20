@@ -1,7 +1,8 @@
 
-import logging
 import pandas as pd
 import random
+
+from django.conf import settings
 
 DATA_NUM = 1000
 BASE_ETH_PRICE = 0.01
@@ -22,6 +23,9 @@ col_names = [
     'Feature3_followers',
 ]
 
+absolute_path = settings.BASE_DIR
+
+
 def produce_data():
     lines = []
     for d_num in range(0, DATA_NUM):
@@ -30,10 +34,13 @@ def produce_data():
         followers = random.randint(LOW_LIKE_NUMBER, HIGH_LIKE_NUMBER)
         total = likes*(1/3) + dislikes*(-1/3) + followers*(1/3)
         total = 0 if total < 0 else total
-        price = total * (HIGH_ETH_PRICE - LOW_ETH_PRICE)/HIGH_LIKE_NUMBER + BASE_ETH_PRICE
+        price = total * (HIGH_ETH_PRICE - LOW_ETH_PRICE) / \
+            HIGH_LIKE_NUMBER + BASE_ETH_PRICE
         lines.append((d_num, price, likes, dislikes, followers))
     df = pd.DataFrame(lines, columns=col_names)
-    df.to_csv('./models/data/data.csv', index=False, header=col_names)
+    df.to_csv(f'{absolute_path}/models/data/data.csv',
+              index=False, header=col_names)
+
 
 if __name__ == "__main__":
     produce_data()

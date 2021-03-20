@@ -11,6 +11,8 @@ django-dotenv = "==1.4.2"
 web3 = "==5.17.0"
 Django = "==2.2"
 psycopg2-binary = "==2.8.6"
+djangorestframework = "*"
+django-cors-headers = "*"
 
 [dev-packages]
 flake8 = "*"
