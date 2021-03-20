@@ -22,14 +22,16 @@ from ipfs_utility.core import like, dislike, create_item_folder, follow, IPFS
 class IPFSTestCase(unittest.TestCase):
 
     def test_add(self):
-        _hsah = IPFS.add({
+        _hash = IPFS.add({
             "address": "123",
             "msg": {"123": 56},
             "sig": "123444rr",
             "version": "1"
-        }, f'/2222/likes/test1')
+        }, f'/2222/likes/test2')
 
-        ipns = IPFS.get_ipns(_hsah)
+        print(_hash)
+
+        ipns = IPFS.get_ipns(_hash)
         print(ipns)
 
 

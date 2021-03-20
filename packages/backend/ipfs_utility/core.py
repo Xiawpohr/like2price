@@ -1,6 +1,7 @@
 import json
 import requests
 
+from os import path
 from urllib.parse import quote
 
 from like2price.core.models import Sign
@@ -55,7 +56,7 @@ class IPFS():
     @classmethod
     def add(cls, data, filepath):
         try:
-            _, filename = filepath.split(filepath)
+            _, filename = path.split(filepath)
 
             add_url = cls.urls.get('add')
             response = requests.post(f'{add_url}/', files={
@@ -103,25 +104,31 @@ def serialize_sign(sign):
     }
 
 
-def like(sign_id):
+def like(sign_id, publish=False):
     sign = get_sign(sign_id)
     data = serialize_sign(sign)
     _hash = IPFS.add(data, f'/{sign.item.nft_address}/likes/{sign.address}')
-    ipns = IPFS.get_ipns(_hash)
-    return ipns
+    if publish:
+        ipns = IPFS.get_ipns(_hash)
+        return ipns
+    return _hash
 
 
-def dislike(sign_id):
+def dislike(sign_id, publish=False):
     sign = get_sign(sign_id)
     data = serialize_sign(sign)
     _hash = IPFS.add(data, f'/{sign.item.nft_address}/dislikes/{sign.address}')
-    ipns = IPFS.get_ipns(_hash)
-    return ipns
+    if publish:
+        ipns = IPFS.get_ipns(_hash)
+        return ipns
+    return _hash
 
 
-def follow(sign_id):
+def follow(sign_id, publish=False):
     sign = get_sign(sign_id)
     data = serialize_sign(sign)
     _hash = IPFS.add(data, f'/{sign.item.nft_address}/followers/{sign.address}')
-    ipns = IPFS.get_ipns(_hash)
-    return ipns
+    if publish:
+        ipns = IPFS.get_ipns(_hash)
+        return ipns
+    return _hash
