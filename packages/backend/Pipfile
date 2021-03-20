@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pandas = "*"
+sklearn = "*"
+numpy = "*"
+django-dotenv = "==1.4.2"
+web3 = "==5.17.0"
+Django = "==2.2"
+psycopg2-binary = "==2.8.6"
+
+[dev-packages]
+flake8 = "*"
+pylint = "*"
+autopep8 = "*"
+
+[requires]
+python_version = "3.9"

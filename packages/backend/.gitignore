@@ -2,3 +2,4 @@
 /db-data
 /ipfs-data
 **/*.pyc
+pricing_models/data/*
