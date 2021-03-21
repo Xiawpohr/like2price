@@ -1,4 +1,6 @@
+import os
 import json
+from web3 import Web3, HTTPProvider
 from web3.auto import w3
 from hexbytes import HexBytes
 from eth_account.messages import encode_defunct
@@ -11,6 +13,7 @@ from like2price.core.models import (
     Item,
     Sign,
 )
+from like2price.core.web3_config import config
 from ipfs_utility.core import (
     create_item_folder,
     like,
@@ -18,6 +21,8 @@ from ipfs_utility.core import (
     follow,
 )
 
+PROJECT_ID = os.environ['PROJECT_ID']
+ROPSTEN_URL = "https://rinkeby.infura.io/v3/%s" % PROJECT_ID
 
 class ArtistSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,13 +32,58 @@ class ArtistSerializer(serializers.ModelSerializer):
         )
 
 
+class ItemSignSerializer(serializers.Serializer):
+    ipns = serializers.CharField()
+    address = serializers.CharField()
+
+
 class ItemSerializer(serializers.ModelSerializer):
+    like_signs = serializers.SerializerMethodField()
+    dislike_signs = serializers.SerializerMethodField()
+    follower_signs = serializers.SerializerMethodField()
+    token_uri = serializers.SerializerMethodField()
+
     class Meta:
         model = Item
         fields = (
             '__all__'
         )
+        read_only_fields = (
+            'token_uri',
+            'like_signs',
+            'dislike_signs',
+            'follower_signs',
+        )
 
+    def get_like_signs(self, obj):
+        signs = Sign.objects.filter(item=obj, type='likes')
+        if signs.exists():
+            return ItemSignSerializer(signs, many=True).data
+        return []
+
+    def get_dislike_signs(self, obj):
+        signs = Sign.objects.filter(item=obj, type='dislikes')
+        if signs.exists():
+            return ItemSignSerializer(signs, many=True).data
+        return []
+
+    def get_follower_signs(self, obj):
+        signs = Sign.objects.filter(item=obj, type='followers')
+        if signs.exists():
+            return ItemSignSerializer(signs, many=True).data
+        return []
+
+    def get_token_uri(self, obj):
+        try:
+            web3 = Web3(HTTPProvider(ROPSTEN_URL))
+            web3_config = {'address': obj.nft_address, 'abi': config['abi']}
+            contract_instance = web3.eth.contract(address=config['address'], abi=config['abi'])
+            nft_id = obj.nft_id
+            token_uri = contract_instance.functions.tokenURI(int(nft_id)).call()
+        except Exception as e:
+            print(e)
+            token_uri = None
+        return token_uri
 
 class CreateItemSerializer(serializers.ModelSerializer):
     nft_id = serializers.CharField()
@@ -115,7 +165,8 @@ class CreateSignSerializer(serializers.ModelSerializer):
         assert isinstance(msg, str), 'msg must be str'
         message = encode_defunct(text=msg)
         signature_bytes = HexBytes(signature)
-        recovered_addr = w3.eth.account.recover_message(message, signature=signature_bytes)
+        recovered_addr = w3.eth.account.recover_message(
+            message, signature=signature_bytes)
         if recovered_addr != address:
             raise serializers.ValidationError('recovered addresss not match')
 
