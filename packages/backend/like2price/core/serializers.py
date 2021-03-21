@@ -104,9 +104,8 @@ class CreateItemSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         if not validated_data.get('owner'):
             raise Http404('wallet_address not exists.')
-
         artist, _ = Artist.objects.get_or_create(
-            wallet_address=validated_data.get('owner'))
+            wallet_address=validated_data.get('owner').get("wallet_address"))
         validated_data["owner"] = artist
         item_instance = super().create(validated_data)
         ipns = create_item_folder(validated_data["nft_address"])
@@ -133,7 +132,7 @@ class CreateSignSerializer(serializers.ModelSerializer):
         sign_type = validated_data.get('type')
         item = validated_data.get("item")
         self.verify_sign(validated_data.get('address'),
-                         json.dumps(validated_data.get('msg')),
+                         validated_data.get('msg'),
                          validated_data.get('sig'))
 
         response = super().create(validated_data)
@@ -154,21 +153,16 @@ class CreateSignSerializer(serializers.ModelSerializer):
         item.save()
         return sign_instance
 
-    def to_representation(self, instance):
-        """Convert `username` to lowercase."""
-        ret = super().to_representation(instance)
-        ret['username'] = ret['username'].lower()
-        return ret
-
     @classmethod
     def verify_sign(cls, address, msg, signature):
-        assert isinstance(msg, str), 'msg must be str'
-        message = encode_defunct(text=msg)
+        assert isinstance(msg, dict), 'msg must be dict'
+        msg_escaped = json.dumps(msg).replace(' ', '')
+        message = encode_defunct(text=msg_escaped)
         signature_bytes = HexBytes(signature)
         recovered_addr = w3.eth.account.recover_message(
             message, signature=signature_bytes)
         if recovered_addr != address:
-            raise serializers.ValidationError('recovered addresss not match')
+            raise serializers.ValidationError('Recovered address not match')
 
 
 class PriceSerializer(serializers.Serializer):
