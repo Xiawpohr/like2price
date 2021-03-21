@@ -12,10 +12,10 @@ from like2price.core.views import (
 route = routers.SimpleRouter()
 route.trailing_slash = ''
 
-route.register(r'v1/items', ItemViewSet)
-route.register(r'v1/artists', ArtistViewSet)
-route.register(r'v1/signs', SignViewSet)
-route.register(r'v1/price', PriceViewSet)
+route.register(r'api/items', ItemViewSet)
+route.register(r'api/artists', ArtistViewSet)
+route.register(r'api/signs', SignViewSet)
+route.register(r'api/price', PriceViewSet)
 urlpatterns = [
     path(r'', include(route.urls)),
 ]
