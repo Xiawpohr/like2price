@@ -7,6 +7,12 @@ from like2price.core.models import (
     Item,
     Sign,
 )
+from ipfs_utility.core import (
+    create_item_folder,
+    like,
+    dislike,
+    follow,
+)
 
 
 class ArtistSerializer(serializers.ModelSerializer):
@@ -48,9 +54,14 @@ class CreateItemSerializer(serializers.ModelSerializer):
         artist, _ = Artist.objects.get_or_create(
             wallet_address=validated_data.get('owner'))
         validated_data["owner"] = artist
-        # TODO: get ipns
-        # validated_data["ipns"] = "xxx"
-        return super().create(validated_data)
+        item_instance = super().create(validated_data)
+        ipns = create_item_folder(validated_data["nft_address"])
+        try:
+            item_instance.ipns = ipns
+            item_instance.save()
+        except Exception as e:
+            print(e)
+        return item_instance
 
 
 class CreateSignSerializer(serializers.ModelSerializer):
@@ -67,15 +78,29 @@ class CreateSignSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         sign_type = validated_data.get('type')
         item = validated_data.get("item")
-        if sign_type == "likes":
-            item.likes += 1
-        elif sign_type == "dislikes":
-            item.dislikes += 1
-        elif sign_type == "followers":
-            item.followers += 1
+        response = super().create(validated_data)
+        sign_instance = response
+        try:
+            if sign_type == "likes":
+                item.likes += 1
+                sign_instance.ipns = like(sign_instance.id, publish=True)
+            elif sign_type == "dislikes":
+                item.dislikes += 1
+                sign_instance.ipns = dislike(sign_instance.id, publish=True)
+            elif sign_type == "followers":
+                item.followers += 1
+                sign_instance.ipns = follow(sign_instance.id, publish=True)
+            sign_instance.save()
+        except Exception as e:
+            print(e)
         item.save()
-        # TODO: add ipns's type to IPFS
-        return super().create(validated_data)
+        return sign_instance
+
+    def to_representation(self, instance):
+        """Convert `username` to lowercase."""
+        ret = super().to_representation(instance)
+        ret['username'] = ret['username'].lower()
+        return ret
 
 
 class PriceSerializer(serializers.Serializer):
