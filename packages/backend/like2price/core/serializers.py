@@ -1,3 +1,7 @@
+import json
+from web3.auto import w3
+from hexbytes import HexBytes
+from eth_account.messages import encode_defunct
 
 from rest_framework import serializers
 from django.http import Http404
@@ -78,6 +82,10 @@ class CreateSignSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         sign_type = validated_data.get('type')
         item = validated_data.get("item")
+        self.verify_sign(validated_data.get('address'),
+                         json.dumps(validated_data.get('msg')),
+                         validated_data.get('sig'))
+
         response = super().create(validated_data)
         sign_instance = response
         try:
@@ -101,6 +109,15 @@ class CreateSignSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         ret['username'] = ret['username'].lower()
         return ret
+
+    @classmethod
+    def verify_sign(cls, address, msg, signature):
+        assert isinstance(msg, str), 'msg must be str'
+        message = encode_defunct(text=msg)
+        signature_bytes = HexBytes(signature)
+        recovered_addr = w3.eth.account.recover_message(message, signature=signature_bytes)
+        if recovered_addr != address:
+            raise serializers.ValidationError('recovered addresss not match')
 
 
 class PriceSerializer(serializers.Serializer):
