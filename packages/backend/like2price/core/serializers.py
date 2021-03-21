@@ -54,9 +54,8 @@ class CreateItemSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         if not validated_data.get('owner'):
             raise Http404('wallet_address not exists.')
-
         artist, _ = Artist.objects.get_or_create(
-            wallet_address=validated_data.get('owner'))
+            wallet_address=validated_data.get('owner').get("wallet_address"))
         validated_data["owner"] = artist
         item_instance = super().create(validated_data)
         ipns = create_item_folder(validated_data["nft_address"])
@@ -103,12 +102,6 @@ class CreateSignSerializer(serializers.ModelSerializer):
             print(e)
         item.save()
         return sign_instance
-
-    def to_representation(self, instance):
-        """Convert `username` to lowercase."""
-        ret = super().to_representation(instance)
-        ret['username'] = ret['username'].lower()
-        return ret
 
     @classmethod
     def verify_sign(cls, address, msg, signature):

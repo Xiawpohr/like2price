@@ -38,7 +38,7 @@ def produce_data():
             HIGH_LIKE_NUMBER + BASE_ETH_PRICE
         lines.append((d_num, price, likes, dislikes, followers))
     df = pd.DataFrame(lines, columns=col_names)
-    df.to_csv(f'{absolute_path}/models/data/data.csv',
+    df.to_csv(f'{absolute_path}/pricing_models/data/data.csv',
               index=False, header=col_names)
 
 
