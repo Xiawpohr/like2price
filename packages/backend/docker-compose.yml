@@ -8,24 +8,33 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - ./db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
     ports:
-      - "5439:5432"
+      - "${DB_PORT}:5432"
     env_file:
       - ./.env
-  ipfs:
-    image: ghcr.io/linuxserver/ipfs
-    container_name: ipfs
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Asia/Taipei
-    volumes:
-      - ./ipfs-data:/config
-    ports:
-      - 80:80
-      - 4001:4001
-      - 5001:5001
-      - 8080:8080
-      - 443:443 #optional
-    restart: unless-stopped
+  # ipfs:
+  #   image: ipfs/go-ipfs:latest
+  #   container_name: ipfs
+  #   init: true
+  #   stdin_open: true
+  #   tty: true
+  #   volumes:
+  #     - ipfs-staging:/export
+  #     - ipfs-data:/data/ipfs
+  #   command: sh -c "
+  #     ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin '[\"http://0.0.0.0:5001\", \"http://localhost:3000\", \"http://127.0.0.1:5001\", \"https://webui.ipfs.io\"]' &&
+  #     ipfs config --json API.HTTPHeaders.Access-Control-Allow-Methods '[\"PUT\", \"POST\"]'"
+  #   ports:
+  #     - 80:80
+  #     - 4001:4001
+  #     - 5001:5001
+  #     - 8080:8080
+  #     - 3000:3000
+  #     - 443:443 #optional
+  #   restart: unless-stopped
+
+volumes:
+  db-data:
+  ipfs-staging:
+  ipfs-data:
