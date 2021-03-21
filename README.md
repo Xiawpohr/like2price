@@ -16,12 +16,14 @@ This project is a tool for estimating the price of NFT arts based on how many li
 ## How it works?
 
 ![like2price system](./like2price_system.png)
+[ProfileRegistry Contract](https://rinkeby.etherscan.io/address/0x1747ac559d1373591d2bb9692639b6b4e7df5725)
 
 This project use IPFS to store the reputation data, including like count, dislike count, and so forth. Every NFT art will have an IPNS hash that is represented as the community profile of the art. The IPNS hash is recorded on Ethereum. Each reputation file is signed by users, which means the like can be verifiable.
 
 This project is integrated with Zora protocol, which consists of media and market contracts. And the estimated price is calculated by both reputation data on IPFS and history quote on Ethereum using Hedonic regression.
 
 Hedonic regression is the use of a regression model to estimate the influence that various factors have on the price of a good, or sometimes the demand for a good.
+
 
 ## Teams
 
