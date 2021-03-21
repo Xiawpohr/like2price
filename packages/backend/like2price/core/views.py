@@ -1,6 +1,6 @@
 from rest_framework import status, viewsets
 from rest_framework.response import Response
-
+from rest_framework.decorators import action
 from like2price.core.models import (
     Artist,
     Item,
@@ -12,6 +12,7 @@ from like2price.core.serializers import (
     CreateItemSerializer,
     CreateSignSerializer,
     PriceSerializer,
+    NftToItemSerializer,
 )
 
 from like2price.pricing_models.train_model import predict
@@ -41,6 +42,23 @@ class ItemViewSet(viewsets.ModelViewSet):
                 'success': False,
                 'msg': 'Create NFT failed.'
             }, status=status.HTTP_400_BAD_REQUEST)
+
+    # [GET] /api/items/id?ntf_id={ntf_id}
+    @action(detail=False, methods=['GET'])
+    def id(self, request):
+        params = self.request.query_params
+        nft_id = params.get('nft_id')
+        item = self.get_queryset().filter(nft_id=nft_id)
+        if item.exists():
+            item = item[0]
+        else:
+            return Response({
+                'success': False,
+                'msg': 'nft_id not found.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = NftToItemSerializer(item)
+        return Response(serializer.data)
 
 
 class SignViewSet(viewsets.mixins.CreateModelMixin, viewsets.GenericViewSet):

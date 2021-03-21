@@ -1,4 +1,5 @@
 import os
+import requests
 import json
 from web3 import Web3, HTTPProvider
 from web3.auto import w3
@@ -42,6 +43,8 @@ class ItemSerializer(serializers.ModelSerializer):
     dislike_signs = serializers.SerializerMethodField()
     follower_signs = serializers.SerializerMethodField()
     token_uri = serializers.SerializerMethodField()
+    owner = serializers.CharField(source='owner.wallet_address', default='')
+    nft_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Item
@@ -53,6 +56,7 @@ class ItemSerializer(serializers.ModelSerializer):
             'like_signs',
             'dislike_signs',
             'follower_signs',
+            'owner',
         )
 
     def get_like_signs(self, obj):
@@ -84,6 +88,20 @@ class ItemSerializer(serializers.ModelSerializer):
             print(e)
             token_uri = None
         return token_uri
+
+    def get_nft_name(self, obj):
+        try:
+            web3 = Web3(HTTPProvider(ROPSTEN_URL))
+            web3_config = {'address': obj.nft_address, 'abi': config['abi']}
+            contract_instance = web3.eth.contract(address=config['address'], abi=config['abi'])
+            nft_id = obj.nft_id
+            ipfs_url = contract_instance.functions.tokenMetadataURI(int(nft_id)).call()
+            r = requests.get(ipfs_url).content
+            nft_name = json.loads(r).get('name')
+        except Exception as e:
+            print(e)
+            nft_name = '***'
+        return nft_name
 
 class CreateItemSerializer(serializers.ModelSerializer):
     nft_id = serializers.CharField()
@@ -168,3 +186,7 @@ class CreateSignSerializer(serializers.ModelSerializer):
 class PriceSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     price = serializers.FloatField()
+
+
+class NftToItemSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
