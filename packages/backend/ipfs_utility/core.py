@@ -15,8 +15,28 @@ class IPFS():
         'mkdir': f'{IPFS_CLUSTER_HOST}/files/mkdir',
         'stat': f'{IPFS_CLUSTER_HOST}/files/stat',
         'cp': f'{IPFS_CLUSTER_HOST}/files/cp',
-        'publish': f'{IPFS_CLUSTER_HOST}/name/publish'
+        'publish': f'{IPFS_CLUSTER_HOST}/name/publish',
+        'key': f'{IPFS_CLUSTER_HOST}/key/gen'
     }
+
+    @classmethod
+    def gen_key(cls, key_name):
+        try:
+            url = cls.urls.get('key')
+            if url:
+                response = requests.post(url, params={
+                    'arg': key_name
+                })
+
+            return response.json()['Name']
+
+        except json.decoder.JSONDecodeError:
+            print(">>>err")
+            # TODO: bad.......
+            return key_name
+
+        except KeyError:
+            return key_name
 
     @classmethod
     def create_folder(cls, path):
@@ -42,9 +62,12 @@ class IPFS():
     def get_ipns(cls, hash_address):
         url = cls.urls.get('publish')
         try:
+            key = cls.gen_key(hash_address)
+
             response = requests.post(url, params={
                 'arg': f'/ipfs/{hash_address}',
-                'allow-offline': True
+                'allow-offline': True,
+                'key': key
             })
 
             return response.json()['Name']
