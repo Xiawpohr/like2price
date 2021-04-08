@@ -1,0 +1,40 @@
+version: '3.7'
+services:
+  db:
+    image: postgres:12.4-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT}:5432"
+    env_file:
+      - ./.env
+  # ipfs:
+  #   image: ipfs/go-ipfs:latest
+  #   container_name: ipfs
+  #   init: true
+  #   stdin_open: true
+  #   tty: true
+  #   volumes:
+  #     - ipfs-staging:/export
+  #     - ipfs-data:/data/ipfs
+  #   command: sh -c "
+  #     ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin '[\"http://0.0.0.0:5001\", \"http://localhost:3000\", \"http://127.0.0.1:5001\", \"https://webui.ipfs.io\"]' &&
+  #     ipfs config --json API.HTTPHeaders.Access-Control-Allow-Methods '[\"PUT\", \"POST\"]'"
+  #   ports:
+  #     - 80:80
+  #     - 4001:4001
+  #     - 5001:5001
+  #     - 8080:8080
+  #     - 3000:3000
+  #     - 443:443 #optional
+  #   restart: unless-stopped
+
+volumes:
+  db-data:
+  ipfs-staging:
+  ipfs-data:
