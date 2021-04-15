@@ -29,5 +29,5 @@ Hedonic regression is the use of a regression model to estimate the influence th
 
 - [@Xiawpohr](https://github.com/Xiawpohr)
 - [@mavisliu689](https://github.com/mavisliu689)
-- [@sunaley](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#images)
+- [@sunaley](https://github.com/sunaley)
 - Janice
